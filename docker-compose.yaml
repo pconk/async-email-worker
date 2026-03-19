@@ -1,0 +1,56 @@
+services:
+  redis:
+    image: redis:8-alpine
+    container_name: email-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - redis_data:/data
+    networks:
+      - email_network
+
+  api:
+    build: .
+    container_name: email-api
+    # Menjalankan binary API server
+    command: ["./api-server"] 
+    ports:
+      - "8081:8081"    
+    environment:
+      - REDIS_ADDRESS=redis:6379
+      - APP_PORT=8081
+      - QUEUE_NAME=email_queue
+    depends_on:
+      redis:
+        condition: service_healthy # Tunggu sampai healthcheck redis sukses
+    networks:
+      - email_network
+
+  worker:
+    build: .
+    container_name: email-worker
+    # Menjalankan binary Worker
+    command: ["./email-worker"] 
+    deploy:
+      replicas: 1 # Ubah jadi 2 jika ingin test concurrency
+    environment:
+      - REDIS_ADDRESS=redis:6379
+      - QUEUE_NAME=email_queue
+      - WORKER_NUMBER=3 # Jumlah goroutine per container
+      - MAX_RETRY=3
+    depends_on:
+      redis:
+        condition: service_healthy # Tunggu sampai healthcheck redis sukses
+    networks:
+      - email_network
+
+volumes:
+  redis_data:
+
+networks:
+  email_network:

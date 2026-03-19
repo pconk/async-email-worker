@@ -1,0 +1,15 @@
+### Test health check
+GET http://localhost:8081/health
+
+### Test send email (POST)
+POST http://localhost:8081/email
+Content-Type: application/json
+
+{
+  "to": "test@email.com",
+  "subject": "Hello",
+  "message": "Test email"
+}
+
+### Test get job status (POST)
+GET http://localhost:8081/jobs/a592f2b7-d85e-4a5a-a914-3cabd9b37df4
