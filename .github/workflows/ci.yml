@@ -1,4 +1,4 @@
-name: Go CI (Lint & Build Only)
+name: Go CI
 
 on:
   push:
@@ -7,32 +7,28 @@ on:
     branches: [ main, master ]
 
 jobs:
-  lint-and-build:
-    name: Lint and Build
+  build-and-check:
+    name: Build Check
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Go
+      - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.26' # Sesuaikan versi Go di go.mod kamu
+          go-version: '1.26'
           check-latest: true 
 
-      - name: Get dependencies
+      - name: Install Dependencies
         run: go mod download
 
-      - name: Run Linter
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
-          # argumen opsional jika linter terlalu ketat:
-          args: --timeout=5m --issues-exit-code=0
-
-      - name: Build API
+      - name: Verify API Build
         run: go build -o /dev/null ./cmd/api/main.go
 
-      - name: Build Worker
+      - name: Verify Worker Build
         run: go build -o /dev/null ./cmd/worker/main.go
+
+      - name: Validate Dockerfile Build
+        # Menggunakan build biasa tanpa simpan image untuk hemat waktu
+        run: docker build .
