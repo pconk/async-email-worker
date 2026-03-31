@@ -12,7 +12,7 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - email_network
+      - warehouse-network
 
   api:
     build: .
@@ -29,7 +29,7 @@ services:
       redis:
         condition: service_healthy # Tunggu sampai healthcheck redis sukses
     networks:
-      - email_network
+      - warehouse-network
 
   worker:
     build: .
@@ -47,10 +47,11 @@ services:
       redis:
         condition: service_healthy # Tunggu sampai healthcheck redis sukses
     networks:
-      - email_network
+      - warehouse-network
 
 volumes:
   redis_data:
 
 networks:
-  email_network:
+  warehouse-network:
+    external: true
